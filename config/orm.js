@@ -1,37 +1,43 @@
-const connection = require("./connections");
+const connection = require("../config/connections");
 
 function printQuestionMarks(num) {
     var arr = [];
-    for (var i = 0; i < num; I++) {
+
+    for (var i = 0; i < num; i++) {
         arr.push("?");
     }
+
     return arr.toString();
 }
 
+// Helper function for generating My SQL syntax
 function objToSql(ob) {
     var arr = [];
+
     for (var key in ob) {
-        if (Object.hasOwnProperty.call(ob, key)) {
-            if (typeof value === "string" && value.indexOf(" ") > 0) {
-                value = "'" + value + "'";
-            }
-            arr.push(key + "=" + value);
-        }
+        arr.push(key + "=" + ob[key]);
     }
+
     return arr.toString();
 }
 
+// Create the ORM object to perform SQL queries
 var orm = {
-    all: function (tableInput, cb) {
+    // Function that returns all table entries
+    selectAll: function(tableInput, cb) {
+        // Construct the query string that returns all rows from the target table
         var queryString = "SELECT * FROM " + tableInput + ";";
-        connection.query(queryString, function (err, res) {
+        connection.query(queryString, function(err, result) {
             if (err) {
                 throw err;
             }
-            cb(res);
-        })
+            cb(result);
+        });
     },
-    create: function (table, cols, vals, cb) {
+
+    // Function that insert a single table entry
+    insertOne: function(table, cols, vals, cb) {
+        // Construct the query string that inserts a single row into the target table
         var queryString = "INSERT INTO " + table;
 
         queryString += " (";
@@ -41,45 +47,42 @@ var orm = {
         queryString += printQuestionMarks(vals.length);
         queryString += ") ";
 
-        console.log(queryString);
+        // console.log(queryString);
 
-        connection.query(queryString, vals, function (err, res) {
+        // Perform the database query
+        connection.query(queryString, vals, function(err, result) {
             if (err) {
                 throw err;
             }
 
-            cb(res);
+            // Return results in callback
+            cb(result);
         });
     },
-    update: function(table, objColVals, condition, cb) {
+
+    // Function that updates a single table entry
+    updateOne: function(table, objColVals, condition, cb) {
+        // Construct the query string that updates a single entry in the target table
         var queryString = "UPDATE " + table;
 
-    queryString += " SET ";
-    queryString += objToSql(objColVals);
-    queryString += " WHERE ";
-    queryString += condition;
+        queryString += " SET ";
+        queryString += objToSql(objColVals);
+        queryString += " WHERE ";
+        queryString += condition;
 
-    console.log(queryString);
-    connection.query(queryString, function(err, res) {
-        if (err) {
-            throw err;
-        }
-    
-        cb(res);  
-    });
-    },
+        // console.log(queryString);
 
-    deleteOne: function(table, condition, cb) {
-        var queryString = "DELETE FROM " + tableInput + "WHERE" + condition;
-        console.log(queryString);
-
-        connection.query(queryString, function(err, res) {
-            if(err) {
+        // Perform the database query
+        connection.query(queryString, function(err, result) {
+            if (err) {
                 throw err;
             }
-            cb(res);
+
+            // Return results in callback
+            cb(result);
         });
     }
 };
 
+// Export the orm object for use in other modules
 module.exports = orm;
